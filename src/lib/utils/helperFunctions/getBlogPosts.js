@@ -1,3 +1,37 @@
+import { createClient } from 'contentful';
+
+const client = createClient({
+  space: process.env.VITE_CONTENTFUL_SPACE,
+  accessToken: process.env.VITE_CONTENTFUL_ACCESS_TOKEN,
+});
+
+export default async function handler(req, res) {
+  console.log('API route handler started');
+  try {
+    console.log('Contentful space:', process.env.VITE_CONTENTFUL_SPACE);
+    console.log('Contentful access token:', process.env.VITE_CONTENTFUL_ACCESS_TOKEN ? 'Set' : 'Not set');
+    
+    console.log('Fetching posts from Contentful...');
+    const response = await client.getEntries({
+      content_type: "blogPost",
+      order: "-fields.date",
+    });
+    
+    console.log('Contentful response:', JSON.stringify(response, null, 2));
+    
+    if (response.items) {
+      console.log(`Retrieved ${response.items.length} posts`);
+      res.status(200).json(response.items);
+    } else {
+      console.log("No items found in response");
+      res.status(200).json([]);
+    }
+  } catch (error) {
+    console.error("Error fetching blog posts:", error);
+    res.status(500).json({ message: 'Error retrieving blog posts', error: error.toString(), stack: error.stack });
+  }
+}
+/*
 import { get } from 'svelte/store';
 import {posts} from '$lib/stores';
 
@@ -263,3 +297,4 @@ const genClosingModifiers = (marks) => {
     }
     return modifiers;
 }
+*/
